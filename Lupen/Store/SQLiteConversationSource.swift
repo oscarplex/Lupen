@@ -34,6 +34,26 @@ struct SQLiteConversationSource: Sendable {
 
     let store: ProviderStore
     let provider: ProviderKind
+    /// Stable `SessionSource.id` whose index this store represents. Keeping
+    /// the id beside the store prevents two custom roots of the same provider
+    /// from being treated as interchangeable during verification.
+    let sourceId: String
+    /// Normalized filesystem root actually scanned into `store`. Direct
+    /// conversation-only test seams may omit it, but source-bound verification
+    /// requires an exact match with the active `SessionSource.root`.
+    let indexedRoot: URL?
+
+    init(
+        store: ProviderStore,
+        provider: ProviderKind,
+        sourceId: String? = nil,
+        indexedRoot: URL? = nil
+    ) {
+        self.store = store
+        self.provider = provider
+        self.sourceId = sourceId ?? provider.rawValue
+        self.indexedRoot = indexedRoot.map(SessionSource.normalizedRoot)
+    }
 
     // MARK: - Snapshot (top level)
 
