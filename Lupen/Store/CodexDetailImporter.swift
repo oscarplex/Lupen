@@ -555,6 +555,25 @@ struct CodexDetailImporter: Sendable {
             }
         }
 
+        // 6b. Codex subagent header label ("<nickname> · <role>") for the
+        //     merged turn outline, keyed by the same source identity key the
+        //     render path derives from a child turn. Emit only for a genuine
+        //     merged CHILD piece (id != visible): a discriminated *primary*
+        //     piece would otherwise paint a subagent label on the main
+        //     conversation's own turns. Skip linked (grafted) children — they
+        //     render through the sidechain cell, so a row there is never read.
+        if piece.metadata.id != plan.visibleRawId, !isLinkedSubagent,
+           let label = CodexSourceLabelFormatter.label(for: piece.metadata) {
+            payload.codexSourceLabels.append(StoreCodexSourceLabelRow(
+                sessionId: plan.scopedSessionId,
+                sourceIdentityKey: CodexSourceDiscriminator.sourceIdentityKey(
+                    scopedSessionId: piece.metadata.scopedId,
+                    sourceKey: sourceDiscriminator
+                ),
+                label: label
+            ))
+        }
+
         // 7. Assemble + normalize this piece's conversation.
         let assembled = CodexConversationAssembler.assemble(
             metadata: piece.metadata,

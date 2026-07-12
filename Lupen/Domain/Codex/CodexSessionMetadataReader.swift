@@ -64,7 +64,14 @@ enum CodexSessionMetadataReader {
 
         let timestamp = envelope.payload?.timestamp ?? envelope.timestamp
         let threadSource = envelope.payload?.threadSource ?? envelope.threadSource
-        let agentNickname = envelope.payload?.agentNickname ?? envelope.agentNickname
+        let agentNickname = envelope.payload?.agentNickname
+            ?? envelope.payload?.subagentAgentNickname
+            ?? envelope.agentNickname
+            ?? envelope.subagentAgentNickname
+        let agentRole = envelope.payload?.agentRole
+            ?? envelope.payload?.subagentAgentRole
+            ?? envelope.agentRole
+            ?? envelope.subagentAgentRole
         return CodexSessionMetadata(
             id: id,
             fileURL: url,
@@ -76,6 +83,7 @@ enum CodexSessionMetadataReader {
             forkedFromId: envelope.payload?.forkedFromId ?? envelope.forkedFromId,
             threadSource: threadSource,
             agentNickname: agentNickname,
+            agentRole: agentRole,
             subagentParentThreadId: envelope.payload?.subagentParentThreadId
                 ?? envelope.subagentParentThreadId,
             titleHint: nil,
@@ -135,12 +143,21 @@ enum CodexSessionMetadataReader {
         let forkedFromId: String?
         let threadSource: String?
         let agentNickname: String?
+        let agentRole: String?
         let source: SourceEnvelope?
         let git: GitInfo?
         let payload: Payload?
 
         var subagentParentThreadId: String? {
             source?.subagent?.threadSpawn?.parentThreadId
+        }
+
+        var subagentAgentRole: String? {
+            source?.subagent?.threadSpawn?.agentRole
+        }
+
+        var subagentAgentNickname: String? {
+            source?.subagent?.threadSpawn?.agentNickname
         }
 
         enum CodingKeys: String, CodingKey {
@@ -150,6 +167,7 @@ enum CodexSessionMetadataReader {
             case forkedFromId = "forked_from_id"
             case threadSource = "thread_source"
             case agentNickname = "agent_nickname"
+            case agentRole = "agent_role"
             case source, git
         }
     }
@@ -165,11 +183,20 @@ enum CodexSessionMetadataReader {
         let forkedFromId: String?
         let threadSource: String?
         let agentNickname: String?
+        let agentRole: String?
         let source: SourceEnvelope?
         let git: GitInfo?
 
         var subagentParentThreadId: String? {
             source?.subagent?.threadSpawn?.parentThreadId
+        }
+
+        var subagentAgentRole: String? {
+            source?.subagent?.threadSpawn?.agentRole
+        }
+
+        var subagentAgentNickname: String? {
+            source?.subagent?.threadSpawn?.agentNickname
         }
 
         enum CodingKeys: String, CodingKey {
@@ -179,6 +206,7 @@ enum CodexSessionMetadataReader {
             case forkedFromId = "forked_from_id"
             case threadSource = "thread_source"
             case agentNickname = "agent_nickname"
+            case agentRole = "agent_role"
             case source, git
         }
     }
@@ -215,9 +243,13 @@ enum CodexSessionMetadataReader {
 
     private struct ThreadSpawn: Decodable {
         let parentThreadId: String?
+        let agentRole: String?
+        let agentNickname: String?
 
         enum CodingKeys: String, CodingKey {
             case parentThreadId = "parent_thread_id"
+            case agentRole = "agent_role"
+            case agentNickname = "agent_nickname"
         }
     }
 }
